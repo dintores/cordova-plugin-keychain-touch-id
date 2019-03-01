@@ -370,20 +370,20 @@ public class FingerprintAuthAux {
             //Get old shared Preferences e.g: "com.outsystems.android.WebApplicationActivity"
             SharedPreferences oldSharedPref = cordova.getActivity().getApplicationContext().getSharedPreferences(oldActivityPackageName,Context.MODE_PRIVATE);
             String enc = oldSharedPref.getString("fing" + key, "");
-            
+
             if (!enc.equals("")) {
                 SharedPreferences newSharedPref = cordova.getActivity().getApplicationContext().getSharedPreferences(SHARED_PREFS_NAME,Context.MODE_PRIVATE);
                 SharedPreferences.Editor newEditor = newSharedPref.edit();
                 newEditor.putString("fing" + key, oldSharedPref.getString("fing" + key, ""));
                 newEditor.putString("fing_iv" + key, oldSharedPref.getString("fing_iv" + key, ""));
                 newEditor.commit();
-                
+
                 SharedPreferences.Editor oldEditor = oldSharedPref.edit();
                 oldEditor.remove("fing" + key);
                 oldEditor.remove("fing_iv" + key);
                 oldEditor.commit();
             }
-            
+
             mPluginResult = new PluginResult(PluginResult.Status.OK);
             mCallbackContext.sendPluginResult(mPluginResult);
             return true;
@@ -503,7 +503,11 @@ public class FingerprintAuthAux {
                     // Show the fingerprint dialog. The user has the option to use the fingerprint with
                     // crypto, or you can fall back to using a server-side verified password.
                     mFragment.setCryptoObject(new FingerprintManager.CryptoObject(mCipher));
-                    mFragment.show(cordova.getActivity().getFragmentManager(), DIALOG_FRAGMENT_TAG);
+                    try {
+                      mFragment.show(cordova.getActivity().getFragmentManager(), DIALOG_FRAGMENT_TAG);
+                    } catch (IllegalStateException ignored) {
+                      Log.i(TAG, "Application is running in the background, fingerprint dialog cannot be shown");
+                    }
                 } else {
                     mPluginResult = new PluginResult(PluginResult.Status.ERROR, "Failed to init Cipher");
                     mCallbackContext.sendPluginResult(mPluginResult);
